@@ -1,5 +1,8 @@
 /target
 
+# Do not commit Advent of Code inputs to github
+/input
+
 
 # Added by cargo
 #
