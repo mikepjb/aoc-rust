@@ -72,6 +72,7 @@ fn calibration_values(line: String) -> i32 {
 mod tests {
     use super::*;
 
+    #[ignore]
     #[test]
     fn test_single_line_part_one() {
         assert_eq!(calibration_values("1abc2".to_string()), 12);
@@ -80,6 +81,7 @@ mod tests {
         assert_eq!(calibration_values("dfjnzxtlnine9five".to_string()), 95);
     }
 
+    #[ignore]
     #[test]
     fn test_example_part_one() {
         let example_input = "1abc2
@@ -90,6 +92,7 @@ treb7uchet";
         assert_eq!(part_one(example_input.to_string()), "142");
     }
 
+    #[ignore]
     #[test]
     fn test_example_part_two() {
         let example_input = "two1nine

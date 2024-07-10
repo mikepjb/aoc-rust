@@ -48,6 +48,7 @@ fn calibration_values(line: String, values: &Vec<(&str, &str)>) -> i32 {
     // find index for all values.. pick the largest and smallest indexes and use their values
     let mut maxt: (i32, &str) = (-1, "");
     let mut mint: (i32, &str) = (-1, "");
+    let reverse_line = line.chars().rev().collect::<String>();
 
     for (m, v) in values {
         let (max, min) = (maxt.0, mint.0);
@@ -56,16 +57,19 @@ fn calibration_values(line: String, values: &Vec<(&str, &str)>) -> i32 {
             if index < min || min == -1 {
                 mint = (index, v)
             }
+        }
 
-            if index > max {
+        let reverse_match = m.chars().rev().collect::<String>();
+        if let Some(i) = reverse_line.find(&reverse_match) {
+            let index = i.try_into().unwrap(); // from unsigned to signed
+            if index < max || max == -1 {
                 maxt = (index, v)
             }
         }
     }
 
-    println!("{}, {:?}, {:?}", line, mint, maxt);
+    // println!("line:{}, mint:{:?}, maxt:{:?}", line, mint, maxt);
     let out = (mint.1.to_string() + &maxt.1.to_string()).to_string().parse::<i32>().unwrap();
-    println!("{}", out);
     out
 }
 
@@ -88,6 +92,7 @@ mod tests {
         assert_eq!(calibration_values("dfjnzxtlnine9five".to_string(), &all_values), 95);
         assert_eq!(calibration_values("eightwothree".to_string(), &all_values), 83);
         assert_eq!(calibration_values("abcone2threexyz".to_string(), &all_values), 13);
+        assert_eq!(calibration_values("qbsixfour6six89pqxspnr8".to_string(), &all_values), 68);
     }
 
     #[test]
@@ -102,7 +107,6 @@ treb7uchet";
 
     #[test]
     fn test_example_part_two() {
-        println!("hello!");
         let example_input = "two1nine
 eightwothree
 abcone2threexyz
