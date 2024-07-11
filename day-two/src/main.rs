@@ -2,6 +2,13 @@ use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
 
+// game description:
+// bags of cubes
+// you are shown several hands (; seperated) containing multiple cubes of different colors
+// you have to calculate the maximum number of cubes for each color to find all the bags/games
+// where it was possible to play with a given set of cubes (e.g how many games had less than 13 red
+// cubes?)
+
 fn main() {
     println!("Cube Conundrum");
 }
@@ -83,10 +90,6 @@ fn read_all_hands(hands_string: String) -> Vec::<Hand> {
         }).collect()
 }
 
-// fn read_hand(game_list_string: String) -> Vec<Game> {
-//     game_list_string.map(|hand|
-// }
-
 fn read_game_string(game_string: String) -> Game {
     let mut first_split = game_string.split(": ");
     let game_id = read_game_id(first_split.next().unwrap().to_string());
@@ -96,13 +99,6 @@ fn read_game_string(game_string: String) -> Game {
 
     Game { id: game_id, hands: all_hands }
 }
-
-// game description:
-// bags of cubes
-// you are shown several hands (; seperated) containing multiple cubes of different colors
-// you have to calculate the maximum number of cubes for each color to find all the bags/games
-// where it was possible to play with a given set of cubes (e.g how many games had less than 13 red
-// cubes?)
 
 #[cfg(test)]
 mod tests {
