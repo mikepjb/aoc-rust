@@ -21,14 +21,23 @@ fn main() -> Result<(), Box<dyn Error>>{
         (Color::Blue, 14)
     ]);
 
-    let sum_of_ids: usize = day_input
+    let games: Vec<Game> = day_input
         .lines()
         .map(|game_string| read_game_string(game_string.to_string()))
+        .collect();
+
+    let sum_of_ids: usize = games.clone().into_iter()
         .filter(|game| game_possible(max_cubes(game.clone()), total_cubes.clone()))
         .map(|game| game.id)
         .sum();
 
     println!("{}", sum_of_ids);
+
+    let sum_power: usize = games.into_iter()
+        .map(|game| power(game))
+        .sum();
+
+    println!("{}", sum_power);
 
     Ok(())
 }
@@ -149,6 +158,10 @@ fn game_possible(cubes: HashMap<Color, usize>, max_cubes: HashMap<Color, usize>)
     *cubes.get(&Color::Green).unwrap() <= *max_cubes.get(&Color::Green).unwrap()
 }
 
+fn power(game: Game) -> usize {
+    max_cubes(game).values().cloned().product()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -231,5 +244,13 @@ mod tests {
                 ])),
                 false
         );
+    }
+
+    #[test]
+    fn power_test() {
+        assert_eq!(
+            power(read_game_string("Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red".to_string())),
+            1560
+        )
     }
 }
