@@ -1,3 +1,150 @@
+use std::str::FromStr;
+use std::error::Error;
+use std::fmt;
+
 fn main() {
-    println!("Hello, world!");
+    println!("Cube Conundrum");
+}
+
+#[derive(Debug, PartialEq)]
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+#[derive(Debug, PartialEq)]
+struct Cubes {
+    color: Color,
+    count: usize
+}
+
+#[derive(Debug, PartialEq)]
+struct Hand {
+    cubes: Vec<Cubes>
+}
+
+#[derive(Debug, PartialEq)]
+struct Game {
+    id: usize,
+    hands: Vec<Hand>
+}
+
+#[derive(Debug)]
+pub struct ColorError {
+    pub message: String
+}
+
+impl fmt::Display for ColorError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for ColorError {}
+
+
+impl FromStr for Color {
+    type Err = ColorError;
+
+    fn from_str(input: &str) -> Result<Color, Self::Err> {
+        match input {
+            "red" => Ok(Color::Red),
+            "green" => Ok(Color::Green),
+            "blue" => Ok(Color::Blue),
+            _ => Err(ColorError {
+                message: format!("Could not derive color from string '{}'", input)
+            })
+        }
+    }
+}
+
+fn read_game_id(game_id_string: String) -> usize {
+    game_id_string.split(" ").last().unwrap().parse::<usize>().unwrap()
+}
+
+fn read_all_hands(hands_string: String) -> Vec::<Hand> {
+    hands_string.split("; ")
+        .map(|hand_string| {
+            let all_cubes = hand_string.split(", ")
+                .map(|cubes_string| {
+                    let mut cubes_string = cubes_string.split(" ");
+                    let count_string = cubes_string.next();
+                    let color_string = cubes_string.next();
+                    let cs = color_string.unwrap();
+
+                    Cubes {
+                        count: count_string.unwrap().parse::<usize>().unwrap(),
+                        color: Color::from_str(cs).unwrap()
+                    }
+                }).collect();
+
+            Hand { cubes: all_cubes }
+        }).collect()
+}
+
+// fn read_hand(game_list_string: String) -> Vec<Game> {
+//     game_list_string.map(|hand|
+// }
+
+fn read_game_string(game_string: String) -> Game {
+    let mut first_split = game_string.split(": ");
+    let game_id = read_game_id(first_split.next().unwrap().to_string());
+
+    let all_hands = read_all_hands(first_split.next().unwrap().to_string());
+
+
+    Game { id: game_id, hands: all_hands }
+}
+
+// game description:
+// bags of cubes
+// you are shown several hands (; seperated) containing multiple cubes of different colors
+// you have to calculate the maximum number of cubes for each color to find all the bags/games
+// where it was possible to play with a given set of cubes (e.g how many games had less than 13 red
+// cubes?)
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_id() {
+        assert_eq!(read_game_id("Game 1".to_string()), 1);
+        assert_eq!(read_game_id("Game 15".to_string()), 15);
+        assert_eq!(read_game_id("Game 23".to_string()), 23);
+    }
+
+    #[test]
+    fn full_game_string_test() {
+        // let example_cube_group = CubeGroup { color: Color::Red, count: 5 };
+
+        assert_eq!(
+            read_game_string("Game 7: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green".to_string()),
+            Game {
+                id: 7,
+                hands: vec![
+                    Hand {
+                        cubes: vec![
+                            Cubes { color: Color::Blue, count: 3 },
+                            Cubes { color: Color::Red, count: 4 },
+                        ]
+                    },
+
+                    Hand {
+                        cubes: vec![
+                            Cubes { color: Color::Red, count: 1 },
+                            Cubes { color: Color::Green, count: 2 },
+                            Cubes { color: Color::Blue, count: 6 },
+                        ]
+                    },
+
+                    Hand {
+                        cubes: vec![
+                            Cubes { color: Color::Green, count: 2 },
+                        ]
+                    }
+                ]
+            });
+    }
 }
