@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
+use std::collections::HashMap;
 
 // game description:
 // bags of cubes
@@ -13,7 +14,7 @@ fn main() {
     println!("Cube Conundrum");
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 enum Color {
     Red,
     Green,
@@ -100,6 +101,27 @@ fn read_game_string(game_string: String) -> Game {
     Game { id: game_id, hands: all_hands }
 }
 
+fn max_cubes(game: Game) -> HashMap<Color, usize> {
+    let mut max_cubes: HashMap<Color, usize> = HashMap::new();
+
+    let cubes = game.hands
+        .into_iter()
+        .map(|hand| hand.cubes)
+        .flatten();
+
+    for c in cubes {
+        if max_cubes.contains_key(&c.color) {
+            if c.count > *max_cubes.get(&c.color).unwrap() {
+                max_cubes.insert(c.color, c.count);
+            }
+        } else {
+            max_cubes.insert(c.color, c.count);
+        }
+    }
+
+    max_cubes
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -111,36 +133,52 @@ mod tests {
         assert_eq!(read_game_id("Game 23".to_string()), 23);
     }
 
+    // test fixture provided as a function because I can't assign this with const/static
+    fn example_game() -> Game {
+        Game {
+            id: 7,
+            hands: vec![
+                Hand {
+                    cubes: vec![
+                        Cubes { color: Color::Blue, count: 3 },
+                        Cubes { color: Color::Red, count: 4 },
+                    ]
+                },
+
+                Hand {
+                    cubes: vec![
+                        Cubes { color: Color::Red, count: 1 },
+                        Cubes { color: Color::Green, count: 2 },
+                        Cubes { color: Color::Blue, count: 6 },
+                    ]
+                },
+
+                Hand {
+                    cubes: vec![
+                        Cubes { color: Color::Green, count: 2 },
+                    ]
+                }
+            ]
+        }
+    }
+
     #[test]
     fn full_game_string_test() {
-        // let example_cube_group = CubeGroup { color: Color::Red, count: 5 };
-
         assert_eq!(
             read_game_string("Game 7: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green".to_string()),
-            Game {
-                id: 7,
-                hands: vec![
-                    Hand {
-                        cubes: vec![
-                            Cubes { color: Color::Blue, count: 3 },
-                            Cubes { color: Color::Red, count: 4 },
-                        ]
-                    },
+            example_game()
+        )
+    }
 
-                    Hand {
-                        cubes: vec![
-                            Cubes { color: Color::Red, count: 1 },
-                            Cubes { color: Color::Green, count: 2 },
-                            Cubes { color: Color::Blue, count: 6 },
-                        ]
-                    },
-
-                    Hand {
-                        cubes: vec![
-                            Cubes { color: Color::Green, count: 2 },
-                        ]
-                    }
-                ]
-            });
+    #[test]
+    fn max_cubes_test() {
+        assert_eq!(
+            max_cubes(example_game()),
+            HashMap::<Color, usize>::from([
+                (Color::Red, 4),
+                (Color::Blue, 6),
+                (Color::Green, 2),
+            ])
+        )
     }
 }
