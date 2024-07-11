@@ -1,3 +1,4 @@
+use std::fs;
 use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
@@ -10,29 +11,47 @@ use std::collections::HashMap;
 // where it was possible to play with a given set of cubes (e.g how many games had less than 13 red
 // cubes?)
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>>{
     println!("Cube Conundrum");
+    let day_input = fs::read_to_string("./input/day-two.txt")?;
+
+    let total_cubes = HashMap::<Color, usize>::from([
+        (Color::Red, 12),
+        (Color::Green, 13),
+        (Color::Blue, 14)
+    ]);
+
+    let sum_of_ids: usize = day_input
+        .lines()
+        .map(|game_string| read_game_string(game_string.to_string()))
+        .filter(|game| game_possible(max_cubes(game.clone()), total_cubes.clone()))
+        .map(|game| game.id)
+        .sum();
+
+    println!("{}", sum_of_ids);
+
+    Ok(())
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 enum Color {
     Red,
     Green,
     Blue,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Cubes {
     color: Color,
     count: usize
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Hand {
     cubes: Vec<Cubes>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Game {
     id: usize,
     hands: Vec<Hand>
@@ -122,6 +141,14 @@ fn max_cubes(game: Game) -> HashMap<Color, usize> {
     max_cubes
 }
 
+/// compare the hands played in a game to see if they were possible to play with a given set of
+/// cubes.
+fn game_possible(cubes: HashMap<Color, usize>, max_cubes: HashMap<Color, usize>) -> bool {
+    *cubes.get(&Color::Red).unwrap() <= *max_cubes.get(&Color::Red).unwrap() &&
+    *cubes.get(&Color::Blue).unwrap() <= *max_cubes.get(&Color::Blue).unwrap() &&
+    *cubes.get(&Color::Green).unwrap() <= *max_cubes.get(&Color::Green).unwrap()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -180,5 +207,29 @@ mod tests {
                 (Color::Green, 2),
             ])
         )
+    }
+
+    #[test]
+    fn game_possible_test() {
+        assert!(
+            game_possible(
+                max_cubes(example_game()),
+                HashMap::<Color, usize>::from([
+                    (Color::Red, 4),
+                    (Color::Blue, 6),
+                    (Color::Green, 2),
+                ]))
+        );
+
+        assert_eq!(
+            game_possible(
+                max_cubes(example_game()),
+                HashMap::<Color, usize>::from([
+                    (Color::Red, 4),
+                    (Color::Blue, 1),
+                    (Color::Green, 2),
+                ])),
+                false
+        );
     }
 }
